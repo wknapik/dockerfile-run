@@ -12,7 +12,8 @@ docker.
 # How does it work?
 
 `dockerfile-run` reads a Dockerfile, builds a docker image from it and executes
-a command specified by the user (or the default command) in that image.
+a command specified by the user (or the default command) in a container based
+on that image.
 
 # How do I use it?
 
