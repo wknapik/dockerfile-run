@@ -19,6 +19,7 @@ ifeq ($(VERBOSE),1)
 endif
 
 test: $(tests)
+$(tests): export PATH := $(PATH):$(project_root)
 $(tests):
 	cd "$(project_root)/test/$(dir $@)" && DFR_OPTS="--rm --init" bash $(bash_opt) "./$(notdir $@).sh"
 
