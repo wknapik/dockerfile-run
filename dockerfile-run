@@ -17,7 +17,7 @@ set -eEo pipefail
 
 # Do different things depending on the location of the Dockerfile (stdin,
 # https(s), or local file).
-case "${1,,}" in
+case "${1:?}" in
     # For stdin and http(s), create a temporary Dockerfile. Build context is
     # $PWD, unless overridden.
     -|http://*|https://*)
