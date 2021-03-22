@@ -1,5 +1,5 @@
 project_root := $(realpath $(dir $(lastword $(MAKEFILE_LIST))))
-tests := $(patsubst $(project_root)/%/,%,$(wildcard $(project_root)/test/*/))
+tests := $(patsubst $(project_root)/test/%.sh,%,$(wildcard $(project_root)/test/*/*.sh))
 
 all: test shellcheck
 
@@ -16,7 +16,7 @@ endif
 
 test: $(tests)
 $(tests):
-	cd "$(project_root)/$@" && DFR_OPTS="--rm --init" bash $(bash_opt) ./test.sh
+	cd "$(project_root)/test/$(dir $@)" && DFR_OPTS="--rm --init" bash $(bash_opt) "./$(notdir $@).sh"
 
 shellcheck:
 	find "$(project_root)" -type f \( -name dockerfile-run -o -name '*.sh' \) -print0|\
