@@ -109,11 +109,11 @@ option, which allows multiple arguments to be passed._
 
 ```console
 % cat ./htop
-#!/usr/bin/env -S dockerfile-run --dfr --pid=host
+#!/usr/bin/env -S dockerfile-run --dfr --pid=host --dfr '-w /tmp'
 FROM alpine
 RUN apk --no-cache add htop
-CMD ["htop"]
-% ./htop
+ENTRYPOINT ["htop"]
+%  ./htop -t
 ```
 
 ### `aws-cli` with ~/.aws mounted in the container
