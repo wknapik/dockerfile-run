@@ -94,7 +94,10 @@ user:$2y$05$9eM6Ed7Ddsst3BpQFKnY2.PRcGK/Lzt02PntF0yIEH4F5BBWYvgjW
 # Advanced usage
 
 `--dfr "<docker run options>"` can be passed any number of times both from a
-shebang and on the command line.
+shebang and on the command line and accepts a single argument. The argument can
+be a string containing multiple `docker run` options, but it can't be multiple
+strings. So `--dfr "-v /foo:/bar -w /bar"` is equivalent to `--dfr "-v
+/foo:/bar" --dfr "-w /bar"`.
 
 ## Bake `docker run` options into shebang
 
@@ -105,7 +108,7 @@ option, which allows multiple arguments to be passed._
 ### `htop` running in host pid namespace
 
 ```docker
-#!/usr/bin/env -S dockerfile-run --dfr '--pid=host'
+#!/usr/bin/env -S dockerfile-run --dfr --pid=host
 FROM alpine
 RUN apk --no-cache add htop
 CMD ["htop"]
