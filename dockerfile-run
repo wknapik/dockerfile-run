@@ -67,4 +67,4 @@ build_tag="dockerfilerun-${dockerfile_path_sanitized,,}-${dockerfile_path_id:?}"
 docker build --label dockerfile-run -t "${build_tag:?}" -f "$dockerfile_path" "${build_context:?}" >&6
 
 # Execute the supplied command, or the default CMD.
-docker run "${docker_run_opts[@]}" "$build_tag" "${args[@]:1}"
+exec docker run "${docker_run_opts[@]}" "$build_tag" "${args[@]:1}"
