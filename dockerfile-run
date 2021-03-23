@@ -1,13 +1,12 @@
 #!/usr/bin/env bash
 # Execute dockerfiles as scripts.
 
-## FIXME: include those in tests.
+## FIXME: document in README and include in tests.
+# Environment variables:
+#
 # DFR_CONTEXT: build context
 #     default when reading from local file: <directory containing dockerfile>
 #     default when reading from stdin or remote file: <current directory>
-# DFR_OPTS: docker run options
-#     default for stdin w/ tty: --rm -it --init
-#     default otherwise: --rm --init
 # DFR_QUIET: drop stdout from `docker build'
 #     default: 1
 
@@ -15,26 +14,46 @@
 shopt -s inherit_errexit
 set -eEo pipefail
 
+# Fail with a message.
+error() { echo "$*" >&2; exit 2; }
+
+# Handle the command line argument for passing options to `docker run'.
+# `--dfr "<docker run options>"' can be passed any number of times, from
+# shebang, or on the command line, or both.
+for ((i=1; i <= $#; ++i)); do
+    if [[ "${*:$i:1}" != --dfr ]]; then
+        args+=("${@:$i:1}")
+    else
+        ((++i))
+        ((i <= $#)) || error "The --dfr option requires an argument."
+        read -ra dfr_arg <<<"${@:$i:1}"
+        docker_run_opts_cmd+=("${dfr_arg[@]}")
+    fi
+done
+
 # Do different things depending on the location of the Dockerfile (stdin,
 # https(s), or local file).
-case "${1:?}" in
+case "${args[0],,}" in
     # For stdin and http(s), create a temporary Dockerfile. Build context is
     # $PWD, unless overridden.
     -|http://*|https://*)
        trap 'rm -f "$dockerfile_path"' EXIT
        dockerfile_path="$(umask 0177; mktemp --suffix=-stdin-or-remote)"
-       if [[ "$1" == - ]]; then cat; else curl -fsSL "$1"; fi >"${dockerfile_path:?}"
+       if [[ "${args[0]}" == - ]]; then cat; else curl -fsSL "${args[0]}"; fi >"${dockerfile_path:?}"
        build_context="${DFR_CONTEXT:-"$PWD"}";;
 
     # For local Dockerfiles, build context is the directory containing the
     # Dockefile, unless overridden.
-    *) dockerfile_path="$(realpath "$1")"
+    *) dockerfile_path="$(realpath "${args[0]:?}")"
        build_context="${DFR_CONTEXT:-"$(dirname "$dockerfile_path")"}";;
 esac
 
-# Set command-line options for `docker run'.
-[[ ! -t 0 ]] || add_opts=(-it)
-read -ra run_opts <<<"${DFR_OPTS:---rm --init "${add_opts[@]}"}"
+# Set command-line options for `docker run':
+# * `--rm --init' are passed unconditionally
+# * `-it' is passed when stdin refers to a terminal
+# * additional options can be passwd via `--dfr "opt1 opt2"'.
+docker_run_opts=(--rm --init "${docker_run_opts_cmd[@]}")
+[[ ! -t 0 ]] || docker_run_opts+=(-it)
 
 # Generate a build tag for the image.
 dockerfile_path_sanitized="${dockerfile_path//[^[:alnum:]]/-}"
@@ -49,5 +68,4 @@ build_tag="dockerfilerun-${dockerfile_path_sanitized,,}-${dockerfile_path_id:?}"
 docker build --label dockerfile-run -t "${build_tag:?}" -f "$dockerfile_path" "${build_context:?}" >&6
 
 # Execute the supplied command, or the default CMD.
-shift
-docker run "${run_opts[@]}" "$build_tag" "$@"
+docker run "${docker_run_opts[@]}" "$build_tag" "${args[@]:1}"

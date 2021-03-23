@@ -23,8 +23,9 @@ to be read from:
 * A string beginning with "http://", or "https://" (remote dockerfile)
 * Any other string (local file path)
 
-Some aspects of the tool's operation can be controlled with environment
-variables. This is described in more detail in the source code.
+Additionally, the arguments (originating from the command line, or the shebang,
+or both) may contain any number of occurrences of `--dfr "<docker run
+options>"`. This allows for some more [advanced usage](#advanced-usage).
 
 ## Execute local Dockerfile (via [shebang](https://en.wikipedia.org/wiki/Shebang_(Unix))).
 
@@ -90,8 +91,37 @@ user:$2y$05$9eM6Ed7Ddsst3BpQFKnY2.PRcGK/Lzt02PntF0yIEH4F5BBWYvgjW
 %
 ```
 
+# Advanced usage
+
+`--dfr "<docker run options>"` can be passed any number of times both from a
+shebang and on the command line.
+
+## Bake `docker run` options into shebang
+
+_Notice: in the examples below, `env` is used with the
+[-S](https://www.gnu.org/software/coreutils/manual/html_node/env-invocation.html#g_t_002dS_002f_002d_002dsplit_002dstring-usage-in-scripts)
+option, which allows multiple arguments to be passed._
+
+### `htop` running in host pid namespace
+
+```docker
+#!/usr/bin/env -S dockerfile-run --dfr '--pid=host'
+FROM alpine
+RUN apk --no-cache add htop
+CMD ["htop"]
+```
+
+### `aws-cli` with ~/.aws mounted in the container
+
+```
+#!/usr/bin/env -S dockerfile-run --dfr "-v ${HOME}/.aws:/root/.aws"
+FROM alpine
+RUN apk add --no-cache aws-cli
+ENTRYPOINT ["aws"]
+```
+
 # How do I remove all images created by dockerile-run?
 
 ```shell
-docker images -q --no-trunc --filter="label=dockerfile-run"|xargs -I{} docker rmi "{}"
+docker images -q --no-trunc --filter="label=dockerfile-run"|sort -u|xargs -I{} docker rmi -f "{}"
 ```
