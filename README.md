@@ -109,7 +109,7 @@ option, which allows multiple arguments to be passed._
 
 ```console
 % cat ./htop
-#!/usr/bin/env -S dockerfile-run --dfr --pid=host --dfr '-w /tmp'
+#!/usr/bin/env -S dockerfile-run --dfr --pid=host
 FROM alpine
 RUN apk --no-cache add htop
 ENTRYPOINT ["htop"]
