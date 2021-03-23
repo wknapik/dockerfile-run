@@ -2,6 +2,7 @@ project_root := $(realpath $(dir $(lastword $(MAKEFILE_LIST))))
 
 # A recursive find function (https://gist.github.com/wknapik/94582e964321af704d30c25ccbbf7320).
 find = $(foreach path,$1,$(foreach pattern,$2,$(wildcard $(path)/$(pattern)) $(foreach dir,$(wildcard $(path)/*/),$(call find,$(dir:%/=%),$(pattern)))))
+
 tests := $(patsubst $(project_root)/%.sh,%,$(call find,$(project_root)/test,*.sh))
 
 all: test shellcheck

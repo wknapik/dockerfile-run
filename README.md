@@ -125,3 +125,10 @@ ENTRYPOINT ["aws"]
 ```shell
 docker images -q --no-trunc --filter="label=dockerfile-run"|sort -u|xargs -I{} docker rmi -f "{}"
 ```
+
+# At the risk of stating the obvious...
+
+Don't execute Dockerfiles from untrusted, or mutable sources.
+
+There's a reason Dockerfiles are not allowed to set `docker run` options
+natively. Use this tool at your own risk.
