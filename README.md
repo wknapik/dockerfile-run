@@ -107,20 +107,26 @@ option, which allows multiple arguments to be passed._
 
 ### `htop` running in host pid namespace
 
-```docker
+```console
+% cat ./htop
 #!/usr/bin/env -S dockerfile-run --dfr --pid=host
 FROM alpine
 RUN apk --no-cache add htop
 CMD ["htop"]
+% ./htop
 ```
 
 ### `aws-cli` with ~/.aws mounted in the container
 
-```
+```console
+% cat ./aws
 #!/usr/bin/env -S dockerfile-run --dfr "-v ${HOME}/.aws:/root/.aws"
 FROM alpine
 RUN apk add --no-cache aws-cli
 ENTRYPOINT ["aws"]
+% ./aws s3 ls
+2021-03-24 00:37:00 bukkit
+%
 ```
 
 # How do I remove all images created by dockerile-run?
