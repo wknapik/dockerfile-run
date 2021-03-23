@@ -23,7 +23,7 @@ error() { echo "$*" >&2; exit 2; }
 for ((i=1; i <= $#; ++i)); do
     if [[ "${*:$i:1}" != --dfr ]]; then
         args+=("${@:$i:1}")
-    else
+    else # --dfr is at the current index, its argument is next.
         ((++i))
         ((i <= $#)) || error "The --dfr option requires an argument."
         read -ra dfr_arg <<<"${@:$i:1}"
