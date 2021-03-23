@@ -113,7 +113,7 @@ option, which allows multiple arguments to be passed._
 FROM alpine
 RUN apk --no-cache add htop
 ENTRYPOINT ["htop"]
-%  ./htop -t
+% ./htop -t
 ```
 
 ### `aws-cli` with ~/.aws mounted in the container
