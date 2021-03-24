@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Execute dockerfiles as scripts.
 # https://github.com/wknapik/dockerfile-run
+# Requirementes: bash, coreutils, curl (optional), docker, ncurses (optional).
 
 ## FIXME: include in tests.
 # Environment variables:
@@ -68,11 +69,11 @@ progress() {
         0) cat >/dev/null;;
         1) if [[ -t 1 ]]; then
                local j=0 spinner=(- \\ "|" /)
-               tput civis
+               tput civis 2>/dev/null || true
                while read -r _; do
                    printf "%s\r" "${spinner[((++j % 4))]}"
                done >&2
-               tput cnorm
+               tput cnorm 2>/dev/null || true
            else
                while read -r _; do echo -n .; done >&2
                echo . >&2
