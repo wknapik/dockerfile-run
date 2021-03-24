@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 # Execute dockerfiles as scripts.
 
-## FIXME: document in README and include in tests.
+## FIXME: include in tests.
 # Environment variables:
 #
 # DFR_CONTEXT: build context
 #     default when reading from local file: <directory containing dockerfile>
 #     default when reading from stdin or remote file: <current directory>
-# DFR_QUIET: drop stdout from `docker build'
+# DFR_VERBOSITY: 0 - no output; 1 - condensed output; 2 - full output
 #     default: 1
 
 # Fail on any error.
@@ -59,12 +59,30 @@ dockerfile_path_sanitized="${dockerfile_path//[^[:alnum:]]/-}"
 dockerfile_path_id="$(md5sum <<<"${dockerfile_path:?}"|cut -d' ' -f1)"
 build_tag="dockerfilerun-${dockerfile_path_sanitized,,}-${dockerfile_path_id:?}"
 
-# Discard stdout from `docker build', unless overridden.
-# shellcheck disable=SC2015
-[[ "${DFR_QUIET:-1}" == 1 ]] && exec 6>/dev/null || exec 6>&1
+# Show progress while building an image.
+[[ ! -t 1 ]] || trap 'tput cnorm' EXIT
+progress() {
+    # 0 - no output; 1 - condensed output; 2 - full output.
+    case "${DFR_VERBOSITY:-1}" in
+        0) cat >/dev/null;;
+        1) if [[ -t 1 ]]; then
+               local j=0 spinner=(- \\ "|" /)
+               tput civis
+               while read -r _; do
+                   printf "%s\r" "${spinner[((++j % 4))]}"
+               done >&2
+               tput cnorm
+           else
+               while read -r _; do echo -n .; done >&2
+               echo . >&2
+           fi;;
+        2) cat;;
+        *) error "Invalid verbosity level. Valid values are 0, 1 and 2."
+    esac
+}
 
 # Build the image.
-docker build --label dockerfile-run -t "${build_tag:?}" -f "$dockerfile_path" "${build_context:?}" >&6
+docker build --label dockerfile-run -t "${build_tag:?}" -f "$dockerfile_path" "${build_context:?}"|progress
 
 # Execute the supplied command, or the default CMD.
 exec docker run "${docker_run_opts[@]}" "$build_tag" "${args[@]:1}"

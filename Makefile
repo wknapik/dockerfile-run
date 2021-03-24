@@ -21,7 +21,7 @@ endif
 test: $(tests)
 $(tests): export PATH := $(PATH):$(project_root)
 $(tests):
-	cd "$(project_root)/$(dir $@)" && bash $(bash_opt) "./$(notdir $@).sh" </dev/null
+	cd "$(project_root)/$(dir $@)" && DFR_VERBOSITY=0 bash $(bash_opt) "./$(notdir $@).sh" </dev/null
 
 shellcheck:
 	find "$(project_root)" -type f \( -name dockerfile-run -o -name '*.sh' \) -print0|\
