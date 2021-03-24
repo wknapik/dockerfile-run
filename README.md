@@ -112,7 +112,7 @@ be a string containing multiple `docker run` options, but it can't be multiple
 strings. So `--dfr "-v /foo:/bar -w /bar"` is equivalent to `--dfr "-v
 /foo:/bar" --dfr "-w /bar"`.
 
-### Bake `docker run` options into shebang
+### Baking `docker run` options into shebang
 
 _Notice: in the examples below, `env` is used with the
 [-S](https://www.gnu.org/software/coreutils/manual/html_node/env-invocation.html#g_t_002dS_002f_002d_002dsplit_002dstring-usage-in-scripts)
