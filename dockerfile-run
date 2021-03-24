@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 # Execute dockerfiles as scripts.
+# https://github.com/wknapik/dockerfile-run/blob/master/README.md
 
 ## FIXME: include in tests.
 # Environment variables:
