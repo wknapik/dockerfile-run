@@ -7,8 +7,7 @@ remote urls to be executed like scripts (with, or without arguments).
 
 Save `dockerfile-run` somewhere in $PATH and make it executable.
 The tool requires bash, coreutils, curl (optional, only for remote
-dockerfiles), docker and ncurses (optional, will be used if present, only for
-`DFR_VERBOSITY=1`).
+dockerfiles), docker and ncurses (optional, will be used if present).
 
 # How does it work?
 
