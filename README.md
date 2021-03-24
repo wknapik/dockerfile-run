@@ -77,7 +77,7 @@ NAME="Alpine Linux"
 ### Interactively typing in the Dockerfile.
 ```console
 % dockerfile-run -
-FROM alpine <-- ctrl+d for EOF
+FROM alpine <-- enter + ctrl+d for EOF
 / #         <-- this is an interactive alpine shell
 ```
 
