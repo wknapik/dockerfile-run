@@ -33,8 +33,8 @@ delimeter (`---`).
 
 ## Execute local Dockerfile (via [shebang](https://en.wikipedia.org/wiki/Shebang_(Unix))).
 
-`#!/usr/bin/env docker-run` at the top of a dockerfile does what `#!/bin/sh`,
-or `#!/usr/bin/env bash` does at the top of a shell script.
+`#!/usr/bin/env -S docker-run ---` at the top of a dockerfile does what
+`#!/bin/sh`, or `#!/usr/bin/env bash` does at the top of a shell script.
 
 ```console
 % cat Dockerfile
