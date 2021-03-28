@@ -158,7 +158,7 @@ uid=1000 gid=1000
 %
 ```
 
-# Via shebang and command line
+### Via shebang and command line
 
 ```console
 % cat Dockerfile
