@@ -1,3 +1,7 @@
+_NOTE: I'm currently experimenting with different ways of parsing out `docker
+run` options from the command line. See other branches in this repo for
+alternatives. One of those will be merged to master._
+
 # What is dockerfile-run?
 
 `dockerfile-run` is a tool that allows Dockerfiles from stdin, local files, or
