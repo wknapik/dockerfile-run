@@ -110,7 +110,7 @@ stdin or a remote file is the current directory.
 
 ## Passing options to `docker run`
 
-Additional options can be passed to `docker run' simply by following them with
+Additional options can be passed to `docker run` simply by following them with
 the delimeter (`---`) to distinguish them from other options. This applies to
 both the shebang and the command line.
 
