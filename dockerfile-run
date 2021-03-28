@@ -21,12 +21,6 @@ error() { echo "$*" >&2; exit 2; }
 
 # `docker run' options can be passed via shebang and/or command line, followed
 # by a delimeter each time.
-# FIXME: must make --- mandatory at the end of shebang.
-# % dockerfile-run -w /tmp --- Dockerfile sh
-# @ = -w /tmp --- Dockerfile sh
-# declare -a docker_run_opts_cmd=([0]="-w" [1]="/tmp")
-# declare -a args=([0]="Dockerfile" [1]="sh")
-# %
 parse_args() {
     local delim="---"
     local idxs=() # array indexes of delimeters
