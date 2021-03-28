@@ -3,6 +3,10 @@
 `dockerfile-run` is a tool that allows Dockerfiles from stdin, local files, or
 remote urls to be executed like scripts (with, or without arguments).
 
+It also allows options to be passed to `docker run` both from a
+[shebang](https://en.wikipedia.org/wiki/Shebang_(Unix)) embedded in the
+Dockerfile, and on the command line.
+
 # How do I install it?
 
 Save `dockerfile-run` somewhere in $PATH and make it executable.
@@ -17,15 +21,15 @@ on that image.
 
 # How do I use it?
 
-`dockerfile-run` accepts a single argument to specify where the Dockerfile is
-to be read from:
+In most cases, `dockerfile-run` accepts a single argument to specify where the
+Dockerfile is to be read from:
 * The string "-" (stdin)
 * A string beginning with "http://", or "https://" (remote dockerfile)
 * Any other string (local file path)
 
-Additionally, the arguments (originating from the command line, or the shebang,
-or both) may contain any number of occurrences of `--dfr "<docker run
-options>"`. This allows for some more [advanced usage](#advanced-usage).
+Additionally, options [can be passed](#passing-options-do-docker-run) to
+`docker run`, from the shebang, or the command line, or both, followed by a
+delimeter (`---`).
 
 ## Execute local Dockerfile (via [shebang](https://en.wikipedia.org/wiki/Shebang_(Unix))).
 
@@ -104,25 +108,23 @@ build` to a specific location. The default when reading from a local file is
 the directory containing the dockerfile, while the default when reading from
 stdin or a remote file is the current directory.
 
-## Passing arguments to `docker run`
+## Passing options to `docker run`
 
-`--dfr "<docker run options>"` can be passed any number of times both from a
-shebang and on the command line and accepts a single argument. The argument can
-be a string containing multiple `docker run` options, but it can't be multiple
-strings. So `--dfr "-v /foo:/bar -w /bar"` is equivalent to `--dfr "-v
-/foo:/bar" --dfr "-w /bar"`.
-
-### Baking `docker run` options into shebang
+Additional options can be passed to `docker run' simply by following them with
+the delimeter (`---`) to distinguish them from other options. This applies to
+both the shebang and the command line.
 
 _Notice: in the examples below, `env` is used with the
 [-S](https://www.gnu.org/software/coreutils/manual/html_node/env-invocation.html#g_t_002dS_002f_002d_002dsplit_002dstring-usage-in-scripts)
 option, which allows multiple arguments to be passed._
 
+### Via shebang
+
 #### `htop` running in host pid namespace
 
 ```console
 % cat ./htop
-#!/usr/bin/env -S dockerfile-run --dfr --pid=host
+#!/usr/bin/env -S dockerfile-run --pid=host ---
 FROM alpine
 RUN apk --no-cache add htop
 ENTRYPOINT ["htop"]
@@ -133,7 +135,7 @@ ENTRYPOINT ["htop"]
 
 ```console
 % cat ./aws
-#!/usr/bin/env -S dockerfile-run --dfr "-v ${HOME}/.aws:/root/.aws"
+#!/usr/bin/env -S dockerfile-run -v "${HOME}/.aws:/root/.aws"
 FROM alpine
 RUN apk add --no-cache aws-cli
 ENTRYPOINT ["aws"]
@@ -141,6 +143,10 @@ ENTRYPOINT ["aws"]
 2021-03-24 00:37:00 bukkit
 %
 ```
+
+### Via command line
+
+FIXME
 
 # How do I remove all images created by dockerile-run?
 
