@@ -38,7 +38,7 @@ or `#!/usr/bin/env bash` does at the top of a shell script.
 
 ```console
 % cat Dockerfile
-#!/usr/bin/env dockerfile-run
+#!/usr/bin/env -S dockerfile-run ---
 FROM alpine
 % chmod +x Dockerfile
 %
@@ -135,7 +135,7 @@ ENTRYPOINT ["htop"]
 
 ```console
 % cat ./aws
-#!/usr/bin/env -S dockerfile-run -v "${HOME}/.aws:/root/.aws"
+#!/usr/bin/env -S dockerfile-run -v "${HOME}/.aws:/root/.aws" ---
 FROM alpine
 RUN apk add --no-cache aws-cli
 ENTRYPOINT ["aws"]

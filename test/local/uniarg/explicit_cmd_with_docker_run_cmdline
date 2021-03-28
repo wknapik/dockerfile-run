@@ -1,0 +1,3 @@
+#!/usr/bin/env -S bash -eEo pipefail
+
+[[ "$(./Dockerfile -w /usr --- pwd)" == "/usr" ]]
