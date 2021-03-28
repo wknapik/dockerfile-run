@@ -146,7 +146,15 @@ ENTRYPOINT ["aws"]
 
 ### Via command line
 
-FIXME
+```console
+% cat Dockerfile
+#!/usr/bin/env -S dockerfile-run ---
+FROM alpine
+% ./Dockerfile -u "$(id -u):$(id -g)" -v "$HOME:$HOME" -w "$HOME" --- sh -c 'pwd; id'
+/home/user
+uid=1000 gid=1000
+%
+```
 
 # How do I remove all images created by dockerile-run?
 
