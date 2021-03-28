@@ -1,7 +1,3 @@
-_NOTE: I'm currently experimenting with different ways of parsing out `docker
-run` options from the command line. See other branches in this repo for
-alternatives. One of those will be merged to master._
-
 # What is dockerfile-run?
 
 `dockerfile-run` is a tool that allows Dockerfiles from stdin, local files, or
@@ -37,18 +33,12 @@ delimeter (`---`).
 
 ## Execute local Dockerfile (via [shebang](https://en.wikipedia.org/wiki/Shebang_(Unix))).
 
-`#!/usr/bin/env -S docker-run ---` at the top of a dockerfile does what
+`#!/usr/bin/env docker-run` at the top of a dockerfile does what
 `#!/bin/sh`, or `#!/usr/bin/env bash` does at the top of a shell script.
-
-_Notice: `env` is used with the
-[-S](https://www.gnu.org/software/coreutils/manual/html_node/env-invocation.html#g_t_002dS_002f_002d_002dsplit_002dstring-usage-in-scripts)
-option, which allows multiple arguments to be passed. In the most basic
-examples, only `---` is passed to denote the end of `docker run` options passed
-through the shebang._
 
 ```console
 % cat Dockerfile
-#!/usr/bin/env -S dockerfile-run ---
+#!/usr/bin/env dockerfile-run
 FROM alpine
 % chmod +x Dockerfile
 %
@@ -126,6 +116,10 @@ both the shebang and the command line.
 
 ### Via shebang
 
+_Notice: `env` is used with the
+[-S](https://www.gnu.org/software/coreutils/manual/html_node/env-invocation.html#g_t_002dS_002f_002d_002dsplit_002dstring-usage-in-scripts)
+option, which allows multiple arguments to be passed._
+
 #### `htop` running in host pid namespace
 
 ```console
@@ -154,7 +148,7 @@ ENTRYPOINT ["aws"]
 
 ```console
 % cat Dockerfile
-#!/usr/bin/env -S dockerfile-run ---
+#!/usr/bin/env dockerfile-run
 FROM alpine
 % ./Dockerfile -u "$(id -u):$(id -g)" -v "$HOME:$HOME" -w "$HOME" --- sh -c 'pwd; id'
 /home/user
