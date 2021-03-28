@@ -36,7 +36,11 @@ delimeter (`---`).
 `#!/usr/bin/env -S docker-run ---` at the top of a dockerfile does what
 `#!/bin/sh`, or `#!/usr/bin/env bash` does at the top of a shell script.
 
-_Notice: `env` is used with the [-S](https://www.gnu.org/software/coreutils/manual/html_node/env-invocation.html#g_t_002dS_002f_002d_002dsplit_002dstring-usage-in-scripts) option, which allows multiple arguments to be passed. In the most basic examples, only `---` is passed to denote the end of `docker run` options._
+_Notice: `env` is used with the
+[-S](https://www.gnu.org/software/coreutils/manual/html_node/env-invocation.html#g_t_002dS_002f_002d_002dsplit_002dstring-usage-in-scripts)
+option, which allows multiple arguments to be passed. In the most basic
+examples, only `---` is passed to denote the end of `docker run` options passed
+through the shebang._
 
 ```console
 % cat Dockerfile
