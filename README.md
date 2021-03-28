@@ -79,7 +79,7 @@ NAME="Alpine Linux"
 
 ### With arguments, executing the supplied CMD.
 ```console
-% echo FROM alpine|dockerfile-run - grep '^NAME' /etc/os-release 
+% echo FROM alpine|dockerfile-run - grep '^NAME' /etc/os-release
 NAME="Alpine Linux"
 %
 ```
@@ -155,6 +155,18 @@ FROM alpine
 % ./Dockerfile -u "$(id -u):$(id -g)" -v "$HOME:$HOME" -w "$HOME" --- sh -c 'pwd; id'
 /home/user
 uid=1000 gid=1000
+%
+```
+
+# Via shebang and command line
+
+```console
+% cat Dockerfile
+#!/usr/bin/env -S dockerfile-run -v "${HOME}:${HOME}" -w "${HOME}" ---
+FROM alpine
+% ./Dockerfile -u "$(id -u):$(id -g)" --- sh -c 'pwd; id'
+/home/d
+uid=31337 gid=31337
 %
 ```
 
