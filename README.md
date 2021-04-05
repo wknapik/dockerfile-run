@@ -199,6 +199,16 @@ uid=1000 gid=1000
 docker images -q --no-trunc --filter="label=dockerfile-run"|sort -u|xargs -I{} docker rmi -f "{}"
 ```
 
+# Troubleshooting
+
+The most common issue is with inappropriate/unintended build contexts. For
+instance, reading a Dockerfile from stdin will cause the entire current
+directory tree be sent to the docker daemon as build context, which may cause
+problems due to size, insufficient permissions, or other reasons.
+
+This can be sorted out with the `DFR_CONTEXT` variable [described
+above](#environment-variables).
+
 # At the risk of stating the obvious...
 
 Don't execute Dockerfiles from untrusted, or mutable sources.
