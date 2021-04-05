@@ -1,0 +1,146 @@
+#!/usr/bin/env bash
+# Execute dockerfiles as scripts.
+# https://github.com/wknapik/dockerfile-run
+# Requirementes: bash, coreutils, curl (optional), docker, ncurses (optional).
+
+## FIXME: include in tests.
+# Environment variables:
+#
+# DFR_CONTEXT: build context
+#     default when reading from local file: <directory containing dockerfile>
+#     default when reading from stdin or remote file: <current directory>
+# DFR_VERBOSITY: 0 - no output; 1 - condensed output; 2 - full output
+#     default: 1
+
+# Fail on any error and clean up.
+shopt -s inherit_errexit
+set -eEo pipefail
+trap 'cleanup; [[ ! -t 1 ]] || tput cnorm' ERR INT TERM
+
+# Fail with a message.
+error() { echo "$*" >&2; exit 2; }
+
+# `docker run' options can be passed via shebang and/or command line, followed
+# by a delimiter each time (so there can be 0, 1, or 2 delimiters that we care
+# about). This function assigns `docker run' options to one array and regular
+# options to another.
+parse_args() {
+    local -r delim="---"
+    local -a idxs=() # array of indexes of delimiters
+    local i
+
+    # Collect delimiter indexes.
+    for ((i=1; i <= $#; ++i)); do
+        [[ "${*:$i:1}" != "$delim" ]] || idxs+=("$i")
+    done
+
+    # Do different things depending on the number of delimiters found.
+    case "${#idxs[@]}" in
+        # When no delimiters are present, there are no `docker run' options.
+        # The first argument is the Dockerfile, the rest are regular options.
+        0) args=("$@");;
+
+        # When a single delimiter is passed, we don't know if it's in the
+        # shebang, or on the command line, so we decide based on the first
+        # argument either looking like an option, or like a file name.
+        1) case "${1:?}" in
+               # Everything to the left of the delimiter is `docker run'
+               # options. To the right is the Dockerfile and regular options.
+               -[-[:alnum:]]*)
+                  docker_run_opts_cmd=("${@:1:${idxs[0]}-1}")
+                  args=("${@:${idxs[0]}+1}");;
+
+               # The first argument is the Dockerfile, everything between it
+               # and the delimiter is `docker run' options and everything to
+               # the right of the delimiter is regular options.
+               *) docker_run_opts_cmd=("${@:2:${idxs[0]}-2}")
+                  args=("$1")
+                  args+=("${@:${idxs[0]}+1}");;
+           esac;;
+
+        # With two or more delimiters, the first one is in the shebang, the
+        # second one is on the command line. Everything to the left of the
+        # first one is `docker run' options, following it is the Dockerfile and
+        # up to the second one are `docker run' options. After the second one
+        # are regular options.
+        *) docker_run_opts_cmd=("${@:1:${idxs[0]}-1}")
+           args=("${@:${idxs[0]}+1:1}")
+           docker_run_opts_cmd+=("${@:${idxs[0]}+2:${idxs[1]}-${idxs[0]}-2}")
+           args+=("${@:${idxs[1]}+1}");;
+    esac
+}
+parse_args "$@"
+
+# Do different things depending on the location of the Dockerfile (stdin,
+# https(s), or local file).
+case "${args[0],,}" in
+    # For stdin and http(s), create a temporary Dockerfile. Build context is
+    # $PWD, unless overridden.
+    -|http://*|https://*)
+       cleanup() { rm -f "$dockerfile_path"; }
+       dockerfile_path="$(umask 0177; mktemp --suffix=-stdin-or-remote)"
+       case "${args[0]}" in
+           -) cat;;
+           *) curl -fsSL "${args[0]}";;
+       esac >"${dockerfile_path:?}"
+       build_context="${DFR_CONTEXT:-"$PWD"}";;
+
+    # For local Dockerfiles, build context is the directory containing the
+    # Dockefile, unless overridden.
+    *) cleanup() { :; }
+       dockerfile_path="$(realpath "${args[0]:?}")"
+       build_context="${DFR_CONTEXT:-"$(dirname "$dockerfile_path")"}";;
+esac
+
+# Set command-line options for `docker run':
+# * `--rm --init' are passed unconditionally
+# * `-it' is passed when stdin refers to a terminal
+# * additional options can be passed (see: above)
+docker_run_opts=(--rm --init "${docker_run_opts_cmd[@]}")
+[[ ! -t 0 ]] || docker_run_opts+=(-it)
+
+# Generate a build tag for the image.
+dockerfile_path_sanitized="${dockerfile_path//[^[:alnum:]]/-}"
+dockerfile_path_id="$(md5sum <<<"${dockerfile_path:?}"|cut -d' ' -f1)"
+build_tag="dockerfilerun-${dockerfile_path_sanitized,,}-${dockerfile_path_id:?}"
+
+# Read `docker build' output on stdin and show progress.
+progress() {
+    # Determine what to show based on $DFR_VERBOSITY.
+    case "${DFR_VERBOSITY:-1}" in
+        # Discard all output from `docker build'.
+        0) cat >/dev/null;;
+
+        # Show a spinner if stdout refers to a tty, otherwise just print dots.
+        # All on stderr.
+        1) if [[ -t 1 ]]; then
+               local j=0 spinner=(- \\ \| /)
+               tput civis 2>/dev/null || true
+               while read -r _; do
+                   printf "%s\r" "${spinner[((++j % ${#spinner[*]}))]}" >&2
+               done
+               printf " \r" >&2
+               tput cnorm 2>/dev/null || true
+           else
+               while read -r _; do echo -n .; done >&2
+               echo . >&2
+           fi;;
+
+        # Redirect full output from `docker build' to stderr.
+        2) cat >&2;;
+
+        # Invalid value for $DFR_VERBOSITY.
+        *) error "Invalid verbosity level. Valid values are 0, 1 and 2."
+    esac
+}
+
+# Build the image.
+docker build --label dockerfile-run -t "${build_tag:?}" \
+    -f "$dockerfile_path" "${build_context:?}"|progress
+
+# Delete any temporary files (there's also a trap that calls `cleanup', but it
+# doesn't kick in due to `exec').
+cleanup
+
+# Execute the supplied command, or the default CMD.
+exec docker run "${docker_run_opts[@]}" "$build_tag" "${args[@]:1}"

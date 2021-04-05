@@ -1,0 +1,2 @@
+#!/usr/bin/env -S dockerfile-run -v "${PWD}:${PWD}" -w "${PWD}" ---
+FROM alpine
